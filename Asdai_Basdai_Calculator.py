@@ -1,8 +1,14 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+
+# Попробуем импортировать seaborn и matplotlib, но если их нет, программа не сломается
+try:
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    SEABORN_AVAILABLE = True
+except ModuleNotFoundError:
+    SEABORN_AVAILABLE = False
 
 # Настройки страницы
 st.set_page_config(page_title="ASDAS & BASDAI Калькулятор", layout="centered")
@@ -29,15 +35,18 @@ if st.button("Рассчитать"):
     st.subheader("Результат:")
     st.write(result)
 
-    # Визуализация шкалы активности
-    fig, ax = plt.subplots(figsize=(6, 1))
-    cmap = sns.color_palette(["green", "yellow", "red"])
-    activity_index = np.clip((asdai + basdai) / 2 / 10, 0, 1)  # нормируем в диапазон 0-1
-    sns.heatmap([[activity_index]], cmap=cmap, annot=False, cbar=False, ax=ax)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.set_title("Шкала активности", fontsize=12)
-    st.pyplot(fig)
+    # Визуализация шкалы активности, если seaborn доступен
+    if SEABORN_AVAILABLE:
+        fig, ax = plt.subplots(figsize=(6, 1))
+        cmap = sns.color_palette(["green", "yellow", "red"])
+        activity_index = np.clip((asdai + basdai) / 2 / 10, 0, 1)  # нормируем в диапазон 0-1
+        sns.heatmap([[activity_index]], cmap=cmap, annot=False, cbar=False, ax=ax)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title("Шкала активности", fontsize=12)
+        st.pyplot(fig)
+    else:
+        st.warning("⚠️ Библиотека seaborn не установлена, график не отображается.")
 
 # Информация о шкалах
 st.markdown("""
@@ -51,4 +60,3 @@ st.markdown("""
 - **Умеренная активность** → возможен пересмотр терапии  
 - **Высокая активность** → необходимо усиление терапии и консультация специалиста  
 """)
-
